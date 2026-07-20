@@ -1,0 +1,293 @@
+/* Dashboard and card styles */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* Card sizing */
+.card-full { grid-column: span 12; }
+.card-half { grid-column: span 6; }
+.card-third { grid-column: span 4; }
+.card-quarter { grid-column: span 3; }
+
+@media (max-width: 1024px) {
+  .card-half { grid-column: span 12; }
+  .card-third { grid-column: span 6; }
+  .card-quarter { grid-column: span 4; }
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+  .card-full, .card-half, .card-third, .card-quarter {
+    grid-column: span 1;
+  }
+}
+
+/* Atmosphere hero card */
+.atmosphere-card {
+  background: linear-gradient(135deg, var(--hw-surface) 0%, var(--hw-surface-2) 100%);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+}
+
+.atmosphere-temp {
+  font-size: var(--fs-hero);
+  font-weight: 700;
+  color: var(--hw-text);
+  line-height: 1;
+  margin: var(--space-3) 0;
+}
+
+.atmosphere-condition {
+  font-size: var(--fs-xl);
+  color: var(--hw-muted);
+  margin-bottom: var(--space-4);
+}
+
+.atmosphere-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .atmosphere-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stat-label {
+  font-size: var(--fs-xs);
+  color: var(--hw-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--hw-text);
+}
+
+/* Forecast card */
+.forecast-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.forecast-toggle {
+  display: flex;
+  background: var(--hw-surface-2);
+  border-radius: var(--radius-full);
+  padding: 2px;
+}
+
+.forecast-toggle-btn {
+  padding: var(--space-1) var(--space-3);
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--hw-muted);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  min-width: 44px;
+  height: 28px;
+}
+.forecast-toggle-btn.is-active {
+  background: var(--hw-accent);
+  color: #fff;
+}
+
+.forecast-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.forecast-row {
+  display: grid;
+  grid-template-columns: 80px 40px 1fr 60px;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--hw-border);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+  min-height: 44px;
+}
+.forecast-row:hover { background: var(--hw-hover); }
+.forecast-row:last-child { border-bottom: none; }
+
+.forecast-day { font-weight: 600; color: var(--hw-text); font-size: var(--fs-body); }
+.forecast-icon { font-size: var(--fs-lg); text-align: center; }
+.forecast-condition { color: var(--hw-muted); font-size: var(--fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.forecast-temp { font-weight: 600; color: var(--hw-text); text-align: right; font-size: var(--fs-body); }
+
+/* Moon & sun card */
+.moon-sun-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+@media (max-width: 768px) {
+  .moon-sun-grid { grid-template-columns: 1fr; }
+}
+
+.moon-phase-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.moon-phase-icon {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.sun-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) 0;
+  font-size: var(--fs-body);
+}
+
+/* NWS alerts card */
+.alerts-empty { text-align: center; padding: var(--space-6); color: var(--hw-muted); }
+.alert-item {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--hw-warning);
+  background: var(--hw-surface-2);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+}
+.alert-item:hover { background: var(--hw-hover); }
+.alert-item.severe { border-left-color: var(--hw-danger); }
+.alert-item.moderate { border-left-color: var(--hw-warning); }
+.alert-item.minor { border-left-color: var(--hw-accent); }
+
+.alert-headline { font-weight: 600; color: var(--hw-text); margin-bottom: var(--space-1); }
+.alert-meta { font-size: var(--fs-sm); color: var(--hw-muted); }
+
+/* Hurricane card */
+.hurricane-threat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.threat-none { background: var(--hw-success); color: #fff; }
+.threat-monitor { background: var(--hw-accent); color: #fff; }
+.threat-watch { background: var(--hw-warning); color: #fff; }
+.threat-high { background: var(--hw-danger); color: #fff; }
+
+/* Space card */
+.space-card-content { text-align: center; padding: var(--space-4); }
+.space-card-title { font-weight: 600; color: var(--hw-text); margin-bottom: var(--space-2); }
+
+/* Detail sheet */
+.detail-sheet-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-normal) var(--ease);
+}
+.detail-sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+.detail-sheet {
+  background: var(--hw-surface);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--space-4);
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform var(--dur-normal) var(--ease-out);
+  touch-action: pan-y;
+}
+.detail-sheet-backdrop.is-open .detail-sheet { transform: translateY(0); }
+
+.detail-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--hw-border-strong);
+  border-radius: var(--radius-full);
+  margin: 0 auto var(--space-4);
+}
+
+@media (min-width: 769px) {
+  .detail-sheet-backdrop { align-items: center; }
+  .detail-sheet { border-radius: var(--radius-xl); }
+}
+
+/* Edit mode */
+.dashboard-edit-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background: var(--hw-accent-dim);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+.card-slot {
+  position: relative;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.card-slot.is-dragging { opacity: 0.5; }
+.card-slot.drag-over { outline: 2px dashed var(--hw-accent); }
+
+.card-slot-controls {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+  z-index: 10;
+}
+
+.card-slot-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--hw-elevated);
+  color: var(--hw-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-md);
+  opacity: 0.7;
+  transition: opacity var(--dur-fast);
+}
+.card-slot-btn:hover { opacity: 1; }

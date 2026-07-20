@@ -1,0 +1,207 @@
+/* App bar and navigation menu styles */
+
+.app-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 var(--space-4);
+  background: var(--hw-surface);
+  border-bottom: 1px solid var(--hw-border);
+  gap: var(--space-3);
+  position: relative;
+  z-index: 50;
+}
+
+.app-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--hw-text);
+  white-space: nowrap;
+}
+
+.app-bar-brand .accent {
+  color: var(--hw-accent);
+}
+
+.app-bar-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+  justify-content: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-bar-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--hw-muted);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+  white-space: nowrap;
+  min-width: 44px;
+  justify-content: center;
+}
+
+.app-bar-nav-btn:hover {
+  background: var(--hw-hover);
+  color: var(--hw-text);
+}
+
+.app-bar-nav-btn.is-active {
+  background: var(--hw-accent-dim);
+  color: var(--hw-accent);
+}
+
+.app-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Hambamburger toggle */
+.menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--hw-text);
+  cursor: pointer;
+}
+.menu-toggle:hover { background: var(--hw-hover); }
+
+@media (max-width: 768px) {
+  .menu-toggle { display: flex; }
+  .app-bar-nav { display: none; }
+  .app-bar { padding: 0 var(--space-3); }
+}
+
+/* Side navigation (desktop sidebar) */
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+}
+
+.side-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--hw-muted);
+  font-size: var(--fs-body);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+.side-nav-item:hover { background: var(--hw-hover); color: var(--hw-text); }
+.side-nav-item.is-active { background: var(--hw-accent-dim); color: var(--hw-accent); font-weight: 600; }
+
+/* Settings sidebar */
+.settings-sidebar {
+  width: 240px;
+  background: var(--hw-surface-2);
+  border-right: 1px solid var(--hw-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-sidebar-group {
+  padding: var(--space-3) var(--space-4) var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--hw-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.settings-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  color: var(--hw-text);
+  font-size: var(--fs-body);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  margin: 0 var(--space-2);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  transition: all var(--dur-fast) var(--ease);
+}
+.settings-sidebar-item:hover { background: var(--hw-hover); }
+.settings-sidebar-item.is-active {
+  background: var(--hw-accent-dim);
+  color: var(--hw-accent);
+  border-left-color: var(--hw-accent);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .settings-sidebar {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 300;
+    box-shadow: var(--shadow-lg);
+  }
+  .settings-sidebar.is-open { display: flex; }
+}
+
+/* Accordion */
+.accordion-group {
+  border: 1px solid var(--hw-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+}
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--hw-surface-2);
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+  min-height: 44px;
+}
+.accordion-header:hover { background: var(--hw-hover); }
+.accordion-header .accordion-icon {
+  transition: transform var(--dur-fast) var(--ease);
+  color: var(--hw-muted);
+}
+.accordion-group.is-open .accordion-icon {
+  transform: rotate(180deg);
+}
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--dur-normal) var(--ease);
+}
+.accordion-group.is-open .accordion-body {
+  max-height: 2000px;
+}
+.accordion-body-inner {
+  padding: var(--space-4);
+}

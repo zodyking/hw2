@@ -1,0 +1,11 @@
+{
+  "title": "Home Weather",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Weather Setup",
+        "description": "Set up Home Weather integration."
+      }
+    }
+  }
+}

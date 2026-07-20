@@ -1,0 +1,220 @@
+"""Home Weather Integration."""
+from __future__ import annotations
+
+import logging
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import ConfigType
+
+from .const import DOMAIN, PANEL_ICON, PANEL_TITLE, PANEL_URL_PATH
+
+_LOGGER = logging.getLogger(__name__)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up the Home Weather integration."""
+    hass.data.setdefault(DOMAIN, {})
+    return True
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Home Weather from a config entry."""
+    from .storage import HomeWeatherStorage
+    from .coordinator import WeatherCoordinator
+    from .services import async_setup_websocket_api
+    from .tts.tts_triggers import TTSTriggerManager
+    from .coordinators.tornado_coordinator import TornadoCoordinator
+    from .coordinators.hurricane_coordinator import HurricaneCoordinator
+    from .coordinators.earthquake_coordinator import EarthquakeCoordinator
+    from .coordinators.lightning_coordinator import LightningCoordinator
+    from .coordinators.volcano_coordinator import VolcanoCoordinator
+    from .coordinators.wildfire_coordinator import WildfireCoordinator
+    from .coordinators.air_quality_coordinator import AirQualityCoordinator
+    from .coordinators.space_coordinator import SpaceCoordinator
+    from .coordinators.travel_coordinator import TravelCoordinator
+
+
+    storage = HomeWeatherStorage(hass)
+    await storage.async_load()
+
+    coordinator = WeatherCoordinator(hass, storage)
+    await coordinator.async_request_refresh()
+
+    tornado_coordinator = TornadoCoordinator(hass, storage)
+    await tornado_coordinator.async_config_entry_first_refresh()
+
+    hurricane_coordinator = HurricaneCoordinator(hass, storage)
+    await hurricane_coordinator.async_config_entry_first_refresh()
+
+    earthquake_coordinator = EarthquakeCoordinator(hass, storage)
+    await earthquake_coordinator.async_config_entry_first_refresh()
+
+    lightning_coordinator = LightningCoordinator(hass, storage)
+    await lightning_coordinator.async_config_entry_first_refresh()
+
+    volcano_coordinator = VolcanoCoordinator(hass, storage)
+    await volcano_coordinator.async_config_entry_first_refresh()
+
+    wildfire_coordinator = WildfireCoordinator(hass, storage)
+    await wildfire_coordinator.async_config_entry_first_refresh()
+
+    air_quality_coordinator = AirQualityCoordinator(hass, storage)
+    await air_quality_coordinator.async_config_entry_first_refresh()
+
+    space_coordinator = SpaceCoordinator(hass, storage)
+    await space_coordinator.async_config_entry_first_refresh()
+
+    travel_coordinator = TravelCoordinator(hass, storage)
+    await travel_coordinator.async_config_entry_first_refresh()
+
+    # Set up TTS trigger manager
+    def get_config():
+        return storage._data or {}
+
+    def get_weather_data():
+        return coordinator.data or {}
+
+    async def refresh_weather_data():
+        await coordinator.async_request_refresh()
+
+    trigger_manager = TTSTriggerManager(
+        hass,
+        get_config,
+        get_weather_data,
+        refresh_weather_data=refresh_weather_data,
+    )
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = {
+        "storage": storage,
+        "coordinator": coordinator,
+        "tornado_coordinator": tornado_coordinator,
+        "hurricane_coordinator": hurricane_coordinator,
+        "earthquake_coordinator": earthquake_coordinator,
+        "lightning_coordinator": lightning_coordinator,
+        "volcano_coordinator": volcano_coordinator,
+        "wildfire_coordinator": wildfire_coordinator,
+        "air_quality_coordinator": air_quality_coordinator,
+        "space_coordinator": space_coordinator,
+        "travel_coordinator": travel_coordinator,
+        "trigger_manager": trigger_manager,
+    }
+
+    await hass.config_entries.async_forward_entry_setups(entry, ["binary_sensor", "sensor"])
+
+    from .entity_cleanup import async_remove_legacy_entities
+    await async_remove_legacy_entities(hass, entry)
+
+    async_setup_websocket_api(hass)
+    await _ensure_panel_www_assets(hass)
+    await _register_panel(hass)
+
+    try:
+        await trigger_manager.async_setup()
+    except Exception as e:
+        _LOGGER.error("Failed to set up TTS triggers: %s", e)
+
+    return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(
+        entry, ["binary_sensor", "sensor"]
+    )
+    if not unload_ok:
+        return False
+
+    if entry.entry_id in hass.data.get(DOMAIN, {}):
+        entry_data = hass.data[DOMAIN][entry.entry_id]
+
+        trigger_manager = entry_data.get("trigger_manager")
+        if trigger_manager:
+            try:
+                await trigger_manager.async_unload()
+            except Exception as e:
+                _LOGGER.warning("Error unloading TTS triggers: %s", e)
+
+        lightning_coordinator = entry_data.get("lightning_coordinator")
+        if lightning_coordinator:
+            try:
+                await lightning_coordinator.async_shutdown()
+            except Exception as e:
+                _LOGGER.warning("Error shutting down lightning coordinator: %s", e)
+
+        del hass.data[DOMAIN][entry.entry_id]
+    return True
+
+
+async def _ensure_panel_www_assets(hass: HomeAssistant) -> None:
+    """Sync panel JS and icons into config/www when the integration version changes."""
+    import json
+    from pathlib import Path
+    from .panel_www_setup import ensure_panel_www_assets
+
+    manifest_path = Path(__file__).parent / "manifest.json"
+    version = "0.0.0"
+    try:
+        manifest_text = await hass.async_add_executor_job(
+            manifest_path.read_text, "utf-8"
+        )
+        version = str(json.loads(manifest_text).get("version", "0.0.0"))
+    except (OSError, json.JSONDecodeError, TypeError) as err:
+        _LOGGER.warning("Could not read version for panel www sync: %s", err)
+
+    await hass.async_add_executor_job(ensure_panel_www_assets, hass, version)
+
+
+async def _register_panel(hass: HomeAssistant) -> None:
+    """Register the custom panel with Home Assistant."""
+    try:
+        import json
+        import os
+        from pathlib import Path
+
+        from homeassistant.components.http import StaticPathConfig
+
+        www_path = os.path.join(os.path.dirname(__file__), "www")
+        panel_url = "/local/home_weather"
+
+        manifest_path = Path(__file__).parent / "manifest.json"
+        panel_version = "0.0.0"
+        try:
+            manifest_text = await hass.async_add_executor_job(
+                manifest_path.read_text, "utf-8"
+            )
+            panel_version = str(json.loads(manifest_text).get("version", "0.0.0"))
+        except (OSError, json.JSONDecodeError, TypeError) as e:
+            _LOGGER.warning("Could not read version from manifest.json: %s", e)
+
+        await hass.http.async_register_static_paths([
+            StaticPathConfig(panel_url, www_path, cache_headers=False)
+        ])
+
+        from homeassistant.components import panel_custom
+        from homeassistant.components.frontend import DATA_PANELS, async_remove_panel
+
+        module_url = f"{panel_url}/weather-panel.js?v={panel_version}"
+        if PANEL_URL_PATH in hass.data.get(DATA_PANELS, {}):
+            async_remove_panel(hass, PANEL_URL_PATH)
+
+        await panel_custom.async_register_panel(
+            hass,
+            webcomponent_name="home-weather-panel",
+            frontend_url_path=PANEL_URL_PATH,
+            sidebar_title=PANEL_TITLE,
+            sidebar_icon=PANEL_ICON,
+            module_url=module_url,
+            embed_iframe=False,
+            require_admin=False,
+        )
+
+        _LOGGER.info(
+            "Registered Home Weather panel at /%s (v%s)",
+            PANEL_URL_PATH,
+            panel_version,
+        )
+
+    except Exception as e:
+        _LOGGER.error("Failed to register panel: %s", e)

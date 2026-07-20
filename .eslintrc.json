@@ -1,0 +1,26 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "globals": {
+    "customElements": "readonly",
+    "HTMLElement": "readonly",
+    "HTMLTemplateElement": "readonly",
+    "ShadowRoot": "readonly",
+    "DocumentFragment": "readonly",
+    "CSSStyleSheet": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-undef": "warn",
+    "prefer-const": "warn",
+    "no-var": "error",
+    "no-console": "off"
+  }
+}

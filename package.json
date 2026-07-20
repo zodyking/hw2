@@ -1,0 +1,25 @@
+{
+  "name": "home-weather-v2",
+  "version": "2.0.0",
+  "description": "Home Weather V2 - Home Assistant Custom Integration",
+  "author": "zodyking",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:panel": "node scripts/build.mjs",
+    "build:maps": "node scripts/build-maps.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "dev:maps": "node scripts/build-maps.mjs --watch",
+    "lint": "eslint frontend/src/**/*.js",
+    "lint:fix": "eslint frontend/src/**/*.js --fix",
+    "test": "pytest tests/ -v",
+    "test:fast": "pytest tests/ -x -q",
+    "clean": "node scripts/clean.mjs",
+    "postinstall": "node scripts/postinstall.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.2",
+    "eslint": "^8.57.0"
+  },
+  "dependencies": {}
+}

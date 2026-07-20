@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Build output
+custom_components/home_weather/www/icons/
+custom_components/home_weather/www/sounds/
+custom_components/home_weather/www/.gitkeep
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
