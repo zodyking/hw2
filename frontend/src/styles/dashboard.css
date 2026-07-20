@@ -1,5 +1,12 @@
 /* Dashboard and card styles */
 
+.dashboard-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100%;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);

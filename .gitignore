@@ -2,10 +2,14 @@
 node_modules/
 npm-debug.log*
 
-# Build output
+# Build output (kept in source, synced at install)
 custom_components/home_weather/www/icons/
 custom_components/home_weather/www/sounds/
 custom_components/home_weather/www/.gitkeep
+
+# Agent scratch / preview
+Agent-Files/
+preview/
 
 # Editor
 .vscode/

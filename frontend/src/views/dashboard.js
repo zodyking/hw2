@@ -10,6 +10,14 @@ import { NWSAlertsCard } from '../components/cards/nws-alerts-card.js';
 import { HurricaneCard } from '../components/cards/hurricane-card.js';
 import { SpaceCard } from '../components/cards/space-card.js';
 
+// Fallback data so cards render immediately even before WS data arrives
+const FALLBACK_WEATHER = {
+  current: { temperature: '--', condition: 'Loading...', apparent_temperature: '--', wind_speed: '--', wind_bearing: '', humidity: '--', uv_index: '--' },
+  daily: [], hourly: [], alerts: [], sun: {},
+};
+const FALLBACK_HURRICANE = { storms: [], summary: { threatLevel: 'none', closestStormName: 'No storms', distanceToCenterMiles: null, insideCone: false } };
+const FALLBACK_SPACE = { solar_activity: 'Loading...', k_index: '--', sunspot_count: '--', flare_count: '--' };
+
 export class DashboardView {
   constructor({ panel, ws, root }) {
     this._panel = panel;
@@ -129,12 +137,12 @@ export class DashboardView {
 
     switch (config.type) {
       case 'atmosphere': {
-        const card = new AtmosphereCard({ data: this._weatherData });
+        const card = new AtmosphereCard({ data: this._weatherData || FALLBACK_WEATHER });
         content.appendChild(card.render());
         break;
       }
       case 'forecast': {
-        const card = new ForecastCard({ data: this._weatherData });
+        const card = new ForecastCard({ data: this._weatherData || FALLBACK_WEATHER });
         content.appendChild(card.render());
         break;
       }
@@ -144,22 +152,22 @@ export class DashboardView {
         break;
       }
       case 'moonsun': {
-        const card = new MoonSunCard({ data: this._weatherData });
+        const card = new MoonSunCard({ data: this._weatherData || FALLBACK_WEATHER });
         content.appendChild(card.render());
         break;
       }
       case 'nwsalerts': {
-        const card = new NWSAlertsCard({ data: this._weatherData });
+        const card = new NWSAlertsCard({ data: this._weatherData || FALLBACK_WEATHER });
         content.appendChild(card.render());
         break;
       }
       case 'hurricane': {
-        const card = new HurricaneCard({ data: this._hurricaneData });
+        const card = new HurricaneCard({ data: this._hurricaneData || FALLBACK_HURRICANE });
         content.appendChild(card.render());
         break;
       }
       case 'space': {
-        const card = new SpaceCard({ data: this._spaceData });
+        const card = new SpaceCard({ data: this._spaceData || FALLBACK_SPACE });
         content.appendChild(card.render());
         break;
       }

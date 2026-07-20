@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Weather V2 Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: sans-serif; overflow: hidden; }
+  #toolbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 48px;
+    background: rgba(17,17,17,0.95); border-bottom: 1px solid #333;
+    display: flex; align-items: center; padding: 0 16px; gap: 12px; z-index: 9999;
+  }
+  #toolbar .title { font-size: 14px; font-weight: 600; color: #03a9f4; margin-right: auto; }
+  #toolbar select, #toolbar button {
+    background: #2a2a2a; border: 1px solid #444; color: #e0e0e0;
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  }
+  #toolbar button:hover, #toolbar select:hover { background: #3a3a3a; }
+  #frameContainer { position: fixed; top: 48px; left: 0; right: 0; bottom: 0; transition: all 300ms; }
+  #frameContainer iframe { width: 100%; height: 100%; border: 0; }
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <div class="title">Home Weather V2 — Preview</div>
+  <select id="viewSelect">
+    <option value="forecast">Forecast</option>
+    <option value="hurricanes">Hurricanes</option>
+    <option value="space">Space</option>
+    <option value="alerts">Alerts</option>
+    <option value="trends">Trends</option>
+    <option value="settings">Settings</option>
+  </select>
+  <select id="themeSelect">
+    <option value="dark">Dark Mode</option>
+    <option value="light">Light Mode</option>
+  </select>
+  <select id="widthSelect">
+    <option value="100%">Full Width</option>
+    <option value="768px">Tablet (768px)</option>
+    <option value="375px">Mobile (375px)</option>
+  </select>
+</div>
+<div id="frameContainer">
+  <iframe id="frame" src="preview-iframe.html"></iframe>
+</div>
+<script>
+const viewSel = document.getElementById('viewSelect');
+const themeSel = document.getElementById('themeSelect');
+const widthSel = document.getElementById('widthSelect');
+const frame = document.getElementById('frame');
+const container = document.getElementById('frameContainer');
+
+// PostMessage-based control to avoid cross-origin issues
+function sendToPanel(msg) {
+  frame.contentWindow.postMessage(msg, '*');
+}
+
+window.addEventListener('message', (e) => {
+  if (e.data === 'panel-ready') {
+    sendToPanel({ type: 'set-view', view: viewSel.value });
+    sendToPanel({ type: 'set-theme', theme: themeSel.value });
+  }
+});
+
+viewSel.addEventListener('change', () => sendToPanel({ type: 'set-view', view: viewSel.value }));
+themeSel.addEventListener('change', () => sendToPanel({ type: 'set-theme', theme: themeSel.value }));
+widthSel.addEventListener('change', () => {
+  const w = widthSel.value;
+  container.style.maxWidth = w === '100%' ? 'none' : w;
+  container.style.margin = w === '100%' ? '0' : '0 auto';
+});
+</script>
+</body>
+</html>

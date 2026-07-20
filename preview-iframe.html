@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { margin: 0; padding: 0; background: #111; overflow: hidden; }
+  home-weather-panel { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<home-weather-panel id="panel"></home-weather-panel>
+
+<script src="custom_components/home_weather/www/weather-panel.js"></script>
+<script>
+// Mock HA WebSocket connection
+const mockData = {
+  config: {
+    weather_entity: "weather.home",
+    appearance: { mode: "dark", overrides: {} },
+    dashboard_layout: null,
+    nws_zone: "FLZ050",
+    tts: { enabled: false },
+    media_players: ["media_player.living_room"],
+  },
+  weather: {
+    current: {
+      temperature: 87, condition: "partlycloudy", apparent_temperature: 92,
+      wind_speed: 12, wind_bearing: "SE", humidity: 65, uv_index: 7, pressure: 1013
+    },
+    daily: [
+      { datetime: "2026-07-20", condition: "partlycloudy", temperature: 89, templow: 74, precipitation_probability: 20 },
+      { datetime: "2026-07-21", condition: "rainy", temperature: 83, templow: 72, precipitation_probability: 75 },
+      { datetime: "2026-07-22", condition: "lightning-rainy", temperature: 79, templow: 71, precipitation_probability: 90 },
+      { datetime: "2026-07-23", condition: "cloudy", temperature: 82, templow: 73, precipitation_probability: 40 },
+      { datetime: "2026-07-24", condition: "partlycloudy", temperature: 86, templow: 75, precipitation_probability: 15 },
+      { datetime: "2026-07-25", condition: "sunny", temperature: 91, templow: 77, precipitation_probability: 5 },
+      { datetime: "2026-07-26", condition: "sunny", temperature: 93, templow: 79, precipitation_probability: 0 },
+    ],
+    hourly: Array.from({length: 24}, (_, i) => ({
+      datetime: new Date(Date.now() + i * 3600000).toISOString(),
+      temperature: 75 + Math.round(Math.sin(i / 3) * 8),
+      condition: i < 6 ? "clear-night" : i < 12 ? "sunny" : i < 18 ? "partlycloudy" : "rainy",
+      precipitation_probability: Math.round(Math.random() * 60),
+      wind_speed: 5 + Math.round(Math.random() * 15),
+    })),
+    alerts: [
+      { id: "a1", event: "Severe Thunderstorm Warning", headline: "Severe Thunderstorm Warning in effect until 11:00 PM", severity: "Severe", urgency: "Immediate", description: "A severe thunderstorm is approaching with damaging winds up to 60 mph and quarter-sized hail." },
+      { id: "a2", event: "Heat Advisory", headline: "Heat Advisory from 11 AM to 7 PM. Heat index up to 105F.", severity: "Moderate", urgency: "Expected", description: "Heat index values up to 105. Drink plenty of fluids." },
+    ],
+    sun: { sunrise: "2026-07-20T06:12:00-04:00", sunset: "2026-07-20T20:34:00-04:00", day_length: "14h 22m", solar_noon: "2026-07-20T13:23:00-04:00" },
+  },
+  hurricanes: {
+    storms: [
+      { id: "al-04", name: "Hurricane Felix", basin: "AL", category: 2, maxWindMph: 105, pressureMb: 965, movement: "NW at 12 mph",
+        currentPosition: { lat: 24.5, lon: -78.2 },
+        pastTrack: { coordinates: [[-75.0, 22.0], [-76.0, 23.0], [-77.0, 23.8], [-78.2, 24.5]] },
+        track: { coordinates: [[-78.2, 24.5], [-79.5, 25.8], [-81.0, 27.2], [-82.2, 28.8], [-83.0, 30.5]] },
+        pastPoints: [{ lat: 22.0, lon: -75.0, hour: -24 }, { lat: 23.0, lon: -76.0, hour: -18 }, { lat: 23.8, lon: -77.0, hour: -12 }, { lat: 24.5, lon: -78.2, hour: 0 }],
+        forecastPoints: [{ lat: 24.5, lon: -78.2, hour: 0 }, { lat: 25.8, lon: -79.5, hour: 12 }, { lat: 27.2, lon: -81.0, hour: 24 }, { lat: 28.8, lon: -82.2, hour: 48 }, { lat: 30.5, lon: -83.0, hour: 72 }],
+        cone: { type: "Feature", geometry: { type: "Polygon", coordinates: [[[-76.0, 22.0], [-77.5, 23.5], [-79.0, 25.0], [-80.5, 26.5], [-82.0, 28.0], [-83.5, 29.5], [-85.0, 31.0], [-84.0, 31.5], [-82.5, 30.0], [-81.0, 28.5], [-79.5, 27.0], [-78.0, 25.5], [-76.5, 24.0], [-75.0, 22.5], [-76.0, 22.0]]] } },
+        windRadii: null,
+        watchWarning: { coordinates: [[-80.0, 25.0], [-80.5, 25.5], [-81.0, 26.0], [-81.5, 26.5], [-82.0, 27.0]] },
+        threat: { threatLevel: "watch", insideCone: true, distanceToCenterMiles: 180, nearestTrackDistanceMiles: 95, nearestForecastHour: 24 },
+      },
+      { id: "al-02", name: "Tropical Storm Gabrielle", basin: "AL", category: 0, maxWindMph: 50, pressureMb: 998, movement: "N at 8 mph",
+        currentPosition: { lat: 28.0, lon: -65.5 },
+        pastTrack: { coordinates: [[-64.0, 26.0], [-64.5, 26.8], [-65.0, 27.4], [-65.5, 28.0]] },
+        track: { coordinates: [[-65.5, 28.0], [-65.8, 29.0], [-66.0, 30.2], [-65.8, 31.5]] },
+        pastPoints: [],
+        forecastPoints: [{ lat: 28.0, lon: -65.5, hour: 0 }, { lat: 29.0, lon: -65.8, hour: 24 }, { lat: 30.2, lon: -66.0, hour: 48 }, { lat: 31.5, lon: -65.8, hour: 72 }],
+        cone: null, windRadii: null, watchWarning: null,
+        threat: { threatLevel: "monitor", insideCone: false, distanceToCenterMiles: 520, nearestTrackDistanceMiles: 480, nearestForecastHour: null },
+      },
+    ],
+    summary: { activeCount: 2, closestStormId: "al-04", closestStormName: "Hurricane Felix", distanceToCenterMiles: 180, distanceToNearestForecastMiles: 95, insideCone: true, threatLevel: "watch", estimatedClosestApproachHour: 24, stale: false, warning: null, fetchedAt: new Date().toISOString() },
+    source: "arcgis",
+  },
+  earthquakes: { earthquakes: [{ id: "eq1", magnitude: 3.2, place: "10 mi N of Ridgecrest, CA", time: "2026-07-20T12:30:00Z", depth: 8.5, lon: -117.6, lat: 35.8 }], summary: { count: 1, maxMagnitude: 3.2, minMagnitude: 3.2 } },
+  space_map: { planets: [{ name: "Mercury", symbol: "☿", distance_au: 0.39, angle: 45 }, { name: "Venus", symbol: "♀", distance_au: 0.72, angle: 120 }, { name: "Earth", symbol: "⊕", distance_au: 1.00, angle: 200 }, { name: "Mars", symbol: "♂", distance_au: 1.52, angle: 280 }, { name: "Jupiter", symbol: "♃", distance_au: 5.20, angle: 10 }], solar_activity: "Minor solar flares detected. R1 radio blackout risk.", k_index: 3, sunspot_count: 45, flare_count: 2 },
+  tornadoes: { alerts: [], geojson: {}, summary: { activeCount: 0, highestSeverity: null, affectingHome: false, distanceMiles: null } },
+  lightning: { strikes: [], hourly_count: 0, nearest: null },
+  volcanoes: { volcanoes: [], alerts: [] },
+  wildfires: { wildfires: [], perimeters: [] },
+  air_quality: { aqi: 42, category: "Good", alerts: [] },
+  solar_weather: { solar_activity: "Minor solar flares detected", k_index: 3, sunspot_count: 45, flare_count: 2 },
+  travel_advisories: { advisories: [{ country: "Mexico", level: 2, message: "Exercise increased caution." }] },
+  version: { version: "2.0.0" },
+};
+
+const mockConn = {
+  subscribeMessage: function(handler, msg) {
+    const type = msg.type;
+    let result;
+    switch (type) {
+      case "home_weather/get_config": result = mockData.config; break;
+      case "home_weather/get_weather": result = mockData.weather; break;
+      case "home_weather/get_hurricanes": result = mockData.hurricanes; break;
+      case "home_weather/get_tornadoes": result = mockData.tornadoes; break;
+      case "home_weather/get_earthquakes": result = mockData.earthquakes; break;
+      case "home_weather/get_lightning": result = mockData.lightning; break;
+      case "home_weather/get_volcanoes": result = mockData.volcanoes; break;
+      case "home_weather/get_wildfires": result = mockData.wildfires; break;
+      case "home_weather/get_air_quality": result = mockData.air_quality; break;
+      case "home_weather/get_space_map": result = mockData.space_map; break;
+      case "home_weather/get_solar_weather": result = mockData.solar_weather; break;
+      case "home_weather/get_travel_advisories": result = mockData.travel_advisories; break;
+      case "home_weather/get_version": result = mockData.version; break;
+      case "home_weather/set_config": result = { success: true }; break;
+      default: result = {};
+    }
+    setTimeout(() => handler({ success: true, result }), 80);
+    return () => {};
+  },
+};
+
+// Wait for panel to be ready
+const panel = document.getElementById('panel');
+
+function startPreview() {
+  panel.hass = { connection: mockConn };
+  // Notify parent that panel is ready
+  window.parent.postMessage('panel-ready', '*');
+}
+
+if (customElements.get('home-weather-panel')) {
+  startPreview();
+} else {
+  const check = setInterval(() => {
+    if (customElements.get('home-weather-panel')) {
+      clearInterval(check);
+      startPreview();
+    }
+  }, 50);
+  setTimeout(() => { clearInterval(check); startPreview(); }, 3000);
+}
+
+// Listen for commands from parent window
+window.addEventListener('message', (e) => {
+  if (e.data.type === 'set-view' && panel._navigateTo) {
+    panel._navigateTo(e.data.view);
+  }
+  if (e.data.type === 'set-theme' && panel._appearance) {
+    panel._appearance.mode = e.data.theme;
+    panel._applyTheme();
+  }
+});
+</script>
+</body>
+</html>

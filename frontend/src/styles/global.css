@@ -1,5 +1,9 @@
 /* Global base styles for Home Weather panel */
 :host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   /* Default to dark */
   --hw-bg: #111111;
   --hw-surface: #1c1c1c;
